@@ -1,0 +1,107 @@
+﻿@using OnlineStore.WebUI.Data.Categories
+@using OnlineStore.WebUI.Common.Confirm
+
+@inject CategoryService service
+@inject CategoryState state
+
+@if (Categories == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    if (IsEditMode)
+    {
+        <Create Category="@Category"></Create>
+    }
+    else
+    {
+        <div class="shadow-sm p-3 mb-5 bg-white rounded">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">Id</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Slug</th>
+                        <th scope="col">Type</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Categories.Count == 0)
+                    {
+                        <tr>
+                            <td colspan="3">No data to display</td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var category in Categories)
+                        {
+                            <tr>
+                                <th scope="row">@category.Id</th>
+                                <td>@category.Name</td>
+                                <td>@category.Slug</td>
+                                <td>@category.Type</td>
+                                <td>
+                                    <button class="btn-sm btn-info" @onclick="(() => HandleEditButtonClick(category))">Edit</button>
+                                    <button class="btn-sm btn-danger" @onclick="(() => HandleDeleteButtonClick(category))">Remove</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <Confirm @ref="DeleteConfirmation" ConfirmationChanged="ConfirmDeleteClick"></Confirm>
+    }
+}
+
+@code
+{
+    bool IsEditMode { get; set; } = false;
+
+    bool ShowConfirmation { get; set; } = false;
+
+    private string EditTitle;
+
+    public CategoryViewModel Category { get; set; }
+
+    public List<CategoryViewModel> Categories { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        Categories = await service.GetCategoriesAsync();
+
+        state.OnChange += HandleStateChange;
+    }
+
+    private async void HandleStateChange()
+    {
+        Categories = await service.GetCategoriesAsync();
+        StateHasChanged();
+    }
+
+    protected ConfirmBase DeleteConfirmation { get; set; }
+
+    private void HandleDeleteButtonClick(CategoryViewModel category)
+    {
+        Category = category;
+        DeleteConfirmation.Show("Removing category confirmation", $"Are you sure you want to delete {category.Name}?");
+    }
+
+    protected async Task ConfirmDeleteClick(bool deleteConfirmed)
+    {
+        if (deleteConfirmed)
+        {
+            await service.DeleteAsync(Category.Id);
+            state.SetAppState(Category);
+        }
+    }
+
+    private void HandleEditButtonClick(CategoryViewModel category)
+    {
+        Category = category;       
+    }
+}

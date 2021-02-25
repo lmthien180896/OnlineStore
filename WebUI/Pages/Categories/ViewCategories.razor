@@ -1,0 +1,14 @@
+﻿@page "/categories"
+
+@using WebUI.Data.Categories
+
+<h2>This is Category</h2>
+
+@code
+{
+    bool IsEdit { get; set; } = false;
+
+    public CategoryViewModel Category { get; set; }
+
+    public List<CategoryViewModel> Categories { get; set; }
+} 

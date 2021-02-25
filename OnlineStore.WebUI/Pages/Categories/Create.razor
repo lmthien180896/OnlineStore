@@ -1,0 +1,57 @@
+﻿@using OnlineStore.WebUI.Data.Categories
+
+@inject CategoryService service
+@inject NavigationManager navigationManager
+
+@if (IsReadOnlyMode)
+{
+    <OnlineStore.WebUI.Pages.Categories.Index />
+}
+else
+{
+    <h2>Create new category</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <EditForm Model="@Category" OnValidSubmit="HandleValidSubmit">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <div class="form-group">
+                    <label>Name</label>
+                    <InputText class="form-control" @bind-Value="Category.Name" />
+                </div>
+                <div class="form-group">
+                    <label>Type</label>
+                    <InputText class="form-control" @bind-Value="Category.Type" />
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    Create
+                </button>
+                <a class="btn btn-light" @onclick="HandleClickCancelButton">Cancel</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+@code
+{
+    [Parameter]
+    public CategoryViewModel Category { get; set; } = new CategoryViewModel();
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    bool IsReadOnlyMode { get; set; } = false;
+
+    protected async Task HandleValidSubmit()
+    {
+        await service.CreateAsync(Category);
+        IsReadOnlyMode = true;
+        StateHasChanged();
+    }
+
+    private async Task HandleClickCancelButton()
+    {
+        await OnCancel.InvokeAsync();
+    }
+} 
